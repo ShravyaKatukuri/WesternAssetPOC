@@ -1,1 +1,18 @@
-# WesternAssetPOC
+# WesternAsset_PoC
+
+Western Asset Management is a global fixed investment management firm headquartered in CA that specializes in fixed income securities like bonds and helps its investors maximize their capital gains by helping them diversify their portfolio investments while staying within their risk tolerance limits.
+
+The main goal of this PoC is to maintain and update data pipelines in an efficient manner to ingest, process and store real-time financial data in order to facilitate the Data Analytics teams to connect to AWS QuickSight and also load processed data into other 3rd party visualization softwares or build ML models for making data driven decisions.
+
+Sources, origin and types of data:
+
+There were 3 types of data that were generated – two types on a daily basis and one on a weekly basis:
+First, was the data from investors – who could be institutional like banks, insurance companies and mutual fund companies OR individuals with a High net-worth. This data had information about their investments in different kinds of bonds like Corporate/Treasury/Municipal bonds/CDs (certificate of deposits) and their characteristics like ratings, category, returns, value and growth. 
+Second was the general stock market data sourced on a daily basis from popular stock exchanges around the world like NYSE/Nasdaq/JPX/BSE because Western Asset has offices throughout the globe.
+Third, the weekly data from sources like Financial Times, Quandl (delivers financial, economic and alternative data), and Dow Jones to analyse for weekly trends of the bonds using Machine Learning models.
+All this data, around 1TB in the form of compressed csv format, was sent by 3rd party vendors of respective investors and was handled by a separate data lake team; I personally was responsible for handling 10 data pipelines amounting to a total of around 100 GB of data.
+
+Data flow:
+
+The data flow started with ingesting the real-time investors’ and stock market daily data to a Kafka topic and then loading it into respective s3 buckets. Then, we had a 5 node EMR cluster with one master node of m4.xlarge general purpose instance type for management and configuration of resources and 4 core nodes of c5.xlarge instance type as they perform compute heavy workloads. The cluster had Hadoop, Spark and Hive configuration under the hood and processed the data using Spark’s APIs written in Scala and then loaded this data into a private s3 bucket that’s accessible only within the team. The processed data load into S3 triggered a Lambda function and notifications were sent regularly to the team indicating the progress of the data processing. This processed data was further loaded into a Redshift data warehouse using ETL operations. Then, the SQL query editor was used on Redshift’s console to execute SQL queries to validate this data and also to build consumer-friendly BI dashboards using Amazon’s Quick Sight whenever needed. 
+In the second part, the weekly data was loaded into S3 and processed using an EMR cluster. It was then stored in Hive managed tables in ORC format for optimized compression. This data was then exported into a MySQL database using Sqoop to enable the Data Science team to build Machine Learning models and visualizations using Tableau. I also had an additional responsibility of collaborating with the DS team for the visualizations as I could provide them with a better understanding of the business perspective and in turn, also learn more about the kind of data that they would need so that we can optimize our data pipelines for efficient data ingestion and processing. The entire workflow was orchestrated using Oozie workflow jobs and bug tracking was implemented with Jira. Git was used in the project for keeping track of version control.
